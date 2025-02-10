@@ -2,6 +2,7 @@ import { Canvas, Circle, Rect } from "fabric";
 import { useEffect, useRef, useState } from "react";
 import { Toolbar } from "./components/Toolbar";
 import { ToolbarButton } from "./components/Button";
+import { Settings } from "./components/Settings";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -9,7 +10,7 @@ function App() {
 
   useEffect(() => {
     if (canvasRef.current) {
-      const initCanvas = new Canvas(canvasRef.current, { width: 600, height: 800 });
+      const initCanvas = new Canvas(canvasRef.current, { width: 500, height: 500 });
 
       initCanvas.backgroundColor = "#FFF";
       initCanvas.renderAll();
@@ -42,6 +43,7 @@ function App() {
         <ToolbarButton text="Add Rectangle" onClick={addRectangle} />
         <ToolbarButton text="Add Circle" onClick={addCircle} />
       </Toolbar>
+      <Settings canvas={canvas} />
       <canvas id="canvas" ref={canvasRef} />
     </main>
   );
