@@ -1,51 +1,45 @@
-import { Canvas, Circle, Rect } from "fabric";
-import { useEffect, useRef, useState } from "react";
+import { TopBar } from "./components/TopBar";
 import { Toolbar } from "./components/Toolbar";
-import { ToolbarButton } from "./components/Button";
-import { Settings } from "./components/Settings";
+import { BottomBar } from "./components/ButtomBar";
+import { RightSidebar } from "./components/RightSidebar";
+import { Canvas } from "./components/Canvas";
+import SidebarDrawer from "./components/SidebarDrawer";
+import { useState } from "react";
+
+export type ToolType =
+  | "text"
+  | "image"
+  | "rectangle"
+  | "circle"
+  | "triangle"
+  | "draw"
+  | "background"
+  | null;
 
 function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<Canvas | null>(null);
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const initCanvas = new Canvas(canvasRef.current, { width: 500, height: 500 });
-
-      initCanvas.backgroundColor = "#FFF";
-      initCanvas.renderAll();
-
-      setCanvas(initCanvas);
-
-      return () => {
-        initCanvas.dispose();
-      };
-    }
-  }, []);
-
-  const addRectangle = () => {
-    if (canvas) {
-      const rect = new Rect({ top: 100, left: 100, width: 50, height: 50, fill: "#F0F" });
-      canvas.add(rect);
-    }
-  };
-
-  const addCircle = () => {
-    if (canvas) {
-      const rect = new Circle({ top: 100, left: 100, radius: 50, fill: "#FF0" });
-      canvas.add(rect);
-    }
-  };
+  const [selectedTool, setSelectedTool] = useState<ToolType>(null);
 
   return (
-    <main className="bg-gray-300 h-full flex justify-center items-center">
-      <Toolbar>
-        <ToolbarButton text="Add Rectangle" onClick={addRectangle} />
-        <ToolbarButton text="Add Circle" onClick={addCircle} />
-      </Toolbar>
-      <Settings canvas={canvas} />
-      <canvas id="canvas" ref={canvasRef} />
-    </main>
+    <div className="flex flex-col h-screen bg-gray-100">
+      <TopBar />
+      <div className="flex flex-1 overflow-hidden">
+        <Toolbar
+          selectedTool={selectedTool}
+          setSelectedTool={setSelectedTool}
+        />
+        <div className="flex flex-1">
+          <SidebarDrawer
+            selectedTool={selectedTool}
+            setSelectedTool={setSelectedTool}
+          />
+          <div className="flex flex-col flex-1">
+            <Canvas />
+            <BottomBar />
+          </div>
+        </div>
+        <RightSidebar />
+      </div>
+    </div>
   );
 }
 
