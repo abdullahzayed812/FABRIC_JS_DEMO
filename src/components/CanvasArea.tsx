@@ -5,7 +5,6 @@ interface CanvasAreaProps {
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({ canvasRef }) => {
-  // console.log(canvasRef?.current);
   return (
     <canvas id="canvas" ref={canvasRef} />
     // <div className="flex-1 p-4 overflow-auto">

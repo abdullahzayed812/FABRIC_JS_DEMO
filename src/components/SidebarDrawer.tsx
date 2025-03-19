@@ -1,16 +1,16 @@
 import React from "react";
 import { X } from "lucide-react";
 import { ToolType } from "../App";
+import { useCanvasContext } from "../context/canvasContext";
 
 interface SidebarDrawerProps {
   selectedTool: ToolType;
   setSelectedTool: (tool: ToolType) => void;
 }
 
-const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
-  selectedTool,
-  setSelectedTool,
-}) => {
+const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ selectedTool, setSelectedTool }) => {
+  const { addCanvasShape } = useCanvasContext();
+
   if (!selectedTool) return null;
 
   const renderContent = () => {
@@ -19,7 +19,10 @@ const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
         return (
           <div className="space-y-4">
             <h3 className="font-semibold">Add Text</h3>
-            <button className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600">
+            <button
+              className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => addCanvasShape?.("rect")}
+            >
               Add a heading
             </button>
             <button className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -68,10 +71,7 @@ const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     <div className="w-64 bg-white border-r border-gray-200 p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold capitalize">{selectedTool}</h2>
-        <button
-          onClick={() => setSelectedTool(null)}
-          className="text-gray-500 hover:text-gray-700"
-        >
+        <button onClick={() => setSelectedTool(null)} className="text-gray-500 hover:text-gray-700">
           <X size={20} />
         </button>
       </div>
