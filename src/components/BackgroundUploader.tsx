@@ -21,8 +21,11 @@ const BackgroundUploader: React.FC<BackgroundUploaderProps> = ({ addSvgBackgroun
 
     const reader = new FileReader();
     reader.onload = (event: ProgressEvent<FileReader>) => {
-      if (event.target?.result) {
-        addSvgBackground(event.target.result as string);
+      if (event.target?.result && typeof event.target.result === "string") {
+        const base64Data = event.target.result.replace("data:image/svg+xml;base64,", "");
+        const svgString = atob(base64Data);
+
+        addSvgBackground(svgString);
       }
     };
     reader.readAsDataURL(file);

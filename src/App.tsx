@@ -1,6 +1,5 @@
-// App.tsx
 import React, { useState, useEffect, useRef } from "react";
-import { Canvas, Textbox, FabricObject, util, loadSVGFromURL, Group } from "fabric";
+import { Canvas, Textbox, FabricObject, util, loadSVGFromString } from "fabric";
 import TextEditor from "./components/TextEditor";
 import BackgroundUploader from "./components/BackgroundUploader";
 import ToolsPanel from "./components/ToolsPanel";
@@ -14,23 +13,19 @@ const App: React.FC = () => {
   const [canvasHeight, setCanvasHeight] = useState<number>(1080);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Initialize canvas
   useEffect(() => {
-    // Clean up any existing canvas
     if (canvas) {
       canvas.dispose();
     }
 
     if (!canvasRef.current) return;
 
-    // Create new canvas with Fabric v6
     const initCanvas = new Canvas(canvasRef.current, {
       width: canvasWidth,
       height: canvasHeight,
       backgroundColor: "#ffffff",
     });
 
-    // Set up event listeners
     initCanvas.on("selection:created", (e) => {
       if (e.selected && e.selected.length > 0) {
         setSelectedObject(e.selected[0]);
@@ -49,17 +44,15 @@ const App: React.FC = () => {
 
     setCanvas(initCanvas);
 
-    // Cleanup function
     return () => {
       initCanvas.dispose();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasWidth, canvasHeight]);
 
-  // Add text to canvas
   const addText = (): void => {
     if (!canvas) return;
 
-    // Create a new Textbox with Fabric.js v6
     const text = new Textbox("Edit This Text", {
       left: 100,
       top: 100,
@@ -75,43 +68,47 @@ const App: React.FC = () => {
     canvas.requestRenderAll();
   };
 
-  // // Upload SVG as background
-  const addSvgBackground = (svgUrl: string): void => {
+  const addSvgBackground = async (svgString: string): Promise<void> => {
     if (!canvas) return;
 
-    loadSVGFromURL(svgUrl, (objects, options) => {
-      console.log({ svgUrl, objects, options });
-      const svgObject = util.groupSVGElements(objects, options);
+    const result = await loadSVGFromString(svgString);
+    const { objects, options } = result;
 
-      // Resize to fit canvas
-      const scaleFactor = Math.min(canvasWidth / svgObject.width!, canvasHeight / svgObject.height!);
+    const svgObject = util.groupSVGElements(
+      objects.filter((obj) => obj !== null),
+      options
+    );
 
-      svgObject.scale(scaleFactor);
-
-      // Send to back
-      canvas.add(svgObject);
-      svgObject.sendToBack();
-      canvas.requestRenderAll();
+    svgObject.set({
+      left: 100,
+      top: 100,
+      scaleX: 0.5,
+      scaleY: 0.5,
     });
+
+    canvas.add(svgObject);
+    canvas.renderAll();
   };
 
-  // Update text properties
-  const updateTextProperties = (properties: Record<string, any>): void => {
+  const updateTextProperties = (properties: Partial<Textbox>): void => {
     if (!canvas || !selectedObject || selectedObject.type !== "textbox") return;
 
-    Object.keys(properties).forEach((prop) => {
-      (selectedObject as any).set(prop, properties[prop]);
+    const textbox = selectedObject as Textbox;
+
+    Object.entries(properties).forEach(([prop, value]) => {
+      textbox.set(prop as keyof Textbox, value);
     });
 
     canvas.requestRenderAll();
   };
 
-  // Export canvas as image
   const exportCanvas = (): void => {
     if (!canvas) return;
+
     const dataURL = canvas.toDataURL({
       format: "png",
       quality: 1,
+      multiplier: 1,
     });
 
     const link = document.createElement("a");
