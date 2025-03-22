@@ -1,5 +1,14 @@
+import {
+  RectangleHorizontal,
+  Circle,
+  TextCursor,
+  ChartSpline,
+} from "lucide-react";
+
 interface ToolsPanelProps {
   addText: () => void;
+  addRectangle: () => void;
+  addCircle: () => void;
   canvasWidth: number;
   canvasHeight: number;
   setCanvasWidth: (width: number) => void;
@@ -8,6 +17,8 @@ interface ToolsPanelProps {
 
 const ToolsPanel: React.FC<ToolsPanelProps> = ({
   addText,
+  addRectangle,
+  addCircle,
   canvasWidth,
   canvasHeight,
   setCanvasWidth,
@@ -17,9 +28,30 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="font-bold text-lg border-b pb-2">Tools</h2>
 
-      <div>
-        <button onClick={addText} className="w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded">
-          Add Text
+      <div className="flex items-center gap-4">
+        <button
+          onClick={addText}
+          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
+        >
+          <TextCursor />
+        </button>
+        <button
+          onClick={addRectangle}
+          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
+        >
+          <RectangleHorizontal />
+        </button>
+        <button
+          onClick={addCircle}
+          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
+        >
+          <Circle />
+        </button>
+        <button
+          onClick={() => {}}
+          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
+        >
+          <ChartSpline />
         </button>
       </div>
 

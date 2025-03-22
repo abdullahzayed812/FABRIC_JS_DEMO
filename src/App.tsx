@@ -1,16 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Canvas, Textbox, FabricObject, util, loadSVGFromString } from "fabric";
+import {
+  Canvas,
+  Textbox,
+  FabricObject,
+  util,
+  loadSVGFromString,
+  Rect,
+  Circle,
+} from "fabric";
 import TextEditor from "./components/TextEditor";
 import BackgroundUploader from "./components/BackgroundUploader";
 import ToolsPanel from "./components/ToolsPanel";
 import CanvasContainer from "./components/CanvasContainer";
 import Header from "./components/Header";
+import { LayersPanel } from "./components/LayersPanel";
 
 const App: React.FC = () => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
-  const [canvasWidth, setCanvasWidth] = useState<number>(1080);
-  const [canvasHeight, setCanvasHeight] = useState<number>(1080);
+  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(
+    null
+  );
+  const [canvasWidth, setCanvasWidth] = useState<number>(800);
+  const [canvasHeight, setCanvasHeight] = useState<number>(800);
+  const [layers, setLayers] = useState<FabricObject[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -50,6 +62,11 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasWidth, canvasHeight]);
 
+  const updateLayers = () => {
+    if (!canvas) return;
+    setLayers(canvas.getObjects());
+  };
+
   const addText = (): void => {
     if (!canvas) return;
 
@@ -66,6 +83,40 @@ const App: React.FC = () => {
     canvas.add(text);
     canvas.setActiveObject(text);
     canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const addRectangle = (): void => {
+    if (!canvas) return;
+
+    const rect = new Rect({
+      left: 100,
+      top: 100,
+      width: 100,
+      height: 100,
+      fill: "#f00",
+    });
+
+    canvas.add(rect);
+    canvas.setActiveObject(rect);
+    canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const addCircle = (): void => {
+    if (!canvas) return;
+
+    const circle = new Circle({
+      left: 100,
+      top: 100,
+      radius: 50,
+      fill: "#00f",
+    });
+
+    canvas.add(circle);
+    canvas.setActiveObject(circle);
+    canvas.requestRenderAll();
+    updateLayers();
   };
 
   const addSvgBackground = async (svgString: string): Promise<void> => {
@@ -87,7 +138,8 @@ const App: React.FC = () => {
     });
 
     canvas.add(svgObject);
-    canvas.renderAll();
+    canvas.requestRenderAll();
+    updateLayers();
   };
 
   const updateTextProperties = (properties: Partial<Textbox>): void => {
@@ -100,6 +152,37 @@ const App: React.FC = () => {
     });
 
     canvas.requestRenderAll();
+  };
+
+  const toggleVisibility = (object: FabricObject): void => {
+    if (!canvas) return;
+
+    const currentOpacity = object.get("opacity");
+    object.set("opacity", currentOpacity === 1 ? 0 : 1); // toggle visibility
+    canvas.requestRenderAll();
+  };
+
+  const moveObjectUp = (object: FabricObject): void => {
+    if (!canvas) return;
+
+    const index = canvas.getObjects().indexOf(object);
+    if (index < canvas.getObjects().length - 1) {
+      canvas.moveTo(object, index + 1); // Move the object up by increasing its index
+      canvas.requestRenderAll();
+      updateLayers();
+    }
+  };
+
+  // Move the object one step down in the z-order
+  const moveObjectDown = (object: FabricObject): void => {
+    if (!canvas) return;
+
+    const index = canvas.getObjects().indexOf(object);
+    if (index > 0) {
+      canvas.moveTo(object, index - 1); // Move the object down by decreasing its index
+      canvas.requestRenderAll();
+      updateLayers();
+    }
   };
 
   const exportCanvas = (): void => {
@@ -130,6 +213,8 @@ const App: React.FC = () => {
           <div className="w-full md:w-1/4 space-y-4">
             <ToolsPanel
               addText={addText}
+              addRectangle={addRectangle}
+              addCircle={addCircle}
               canvasWidth={canvasWidth}
               canvasHeight={canvasHeight}
               setCanvasWidth={setCanvasWidth}
@@ -139,8 +224,18 @@ const App: React.FC = () => {
             <BackgroundUploader addSvgBackground={addSvgBackground} />
 
             {selectedObject && selectedObject.type === "textbox" && (
-              <TextEditor selectedObject={selectedObject as Textbox} updateTextProperties={updateTextProperties} />
+              <TextEditor
+                selectedObject={selectedObject as Textbox}
+                updateTextProperties={updateTextProperties}
+              />
             )}
+
+            <LayersPanel
+              layers={layers}
+              moveObjectDown={moveObjectDown}
+              moveObjectUp={moveObjectUp}
+              toggleVisibility={toggleVisibility}
+            />
           </div>
         </div>
       </div>
