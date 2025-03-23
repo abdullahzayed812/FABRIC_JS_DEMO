@@ -1,10 +1,9 @@
 import { useRef } from "react";
+import { useCanvasContext } from "../context/canvasContext";
 
-interface BackgroundUploaderProps {
-  addSvgBackground: (svgUrl: string) => void;
-}
+export const BackgroundUploader = () => {
+  const { addSvgBackground } = useCanvasContext();
 
-const BackgroundUploader: React.FC<BackgroundUploaderProps> = ({ addSvgBackground }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -22,7 +21,10 @@ const BackgroundUploader: React.FC<BackgroundUploaderProps> = ({ addSvgBackgroun
     const reader = new FileReader();
     reader.onload = (event: ProgressEvent<FileReader>) => {
       if (event.target?.result && typeof event.target.result === "string") {
-        const base64Data = event.target.result.replace("data:image/svg+xml;base64,", "");
+        const base64Data = event.target.result.replace(
+          "data:image/svg+xml;base64,",
+          ""
+        );
         const svgString = atob(base64Data);
 
         addSvgBackground(svgString);
@@ -32,20 +34,20 @@ const BackgroundUploader: React.FC<BackgroundUploaderProps> = ({ addSvgBackgroun
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow space-y-4">
-      <h2 className="font-bold text-lg border-b pb-2">Background</h2>
-
-      <div>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
-        >
-          Upload SVG Background
-        </button>
-        <input type="file" accept=".svg" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-      </div>
+    <div>
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        className="w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
+      >
+        Upload SVG Background
+      </button>
+      <input
+        type="file"
+        accept=".svg"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+      />
     </div>
   );
 };
-
-export default BackgroundUploader;

@@ -1,8 +1,8 @@
-interface CanvasContainerProps {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
-}
+import { useCanvasContext } from "../context/canvasContext";
 
-const CanvasContainer: React.FC<CanvasContainerProps> = ({ canvasRef }) => {
+export const CanvasContainer = () => {
+  const { canvasRef } = useCanvasContext();
+
   return (
     <div className="bg-white p-4 rounded shadow">
       <div className="overflow-auto flex justify-center items-center">
@@ -11,5 +11,3 @@ const CanvasContainer: React.FC<CanvasContainerProps> = ({ canvasRef }) => {
     </div>
   );
 };
-
-export default CanvasContainer;

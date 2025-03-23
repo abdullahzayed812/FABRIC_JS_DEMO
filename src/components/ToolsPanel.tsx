@@ -4,29 +4,24 @@ import {
   TextCursor,
   ChartSpline,
 } from "lucide-react";
+import { BackgroundUploader } from "./BackgroundUploader";
+import { useCanvasContext } from "../context/canvasContext";
 
-interface ToolsPanelProps {
-  addText: () => void;
-  addRectangle: () => void;
-  addCircle: () => void;
-  canvasWidth: number;
-  canvasHeight: number;
-  setCanvasWidth: (width: number) => void;
-  setCanvasHeight: (height: number) => void;
-}
-
-const ToolsPanel: React.FC<ToolsPanelProps> = ({
-  addText,
-  addRectangle,
-  addCircle,
-  canvasWidth,
-  canvasHeight,
-  setCanvasWidth,
-  setCanvasHeight,
-}) => {
+export const ToolsPanel = () => {
+  const {
+    addText,
+    addRectangle,
+    addCircle,
+    canvasWidth,
+    canvasHeight,
+    setCanvasWidth,
+    setCanvasHeight,
+  } = useCanvasContext();
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="font-bold text-lg border-b pb-2">Tools</h2>
+
+      <BackgroundUploader />
 
       <div className="flex items-center gap-4">
         <button
@@ -81,5 +76,3 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
     </div>
   );
 };
-
-export default ToolsPanel;

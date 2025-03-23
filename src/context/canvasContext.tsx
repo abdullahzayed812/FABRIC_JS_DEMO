@@ -1,145 +1,265 @@
-import { Canvas, Rect, Circle as FabricCircle, Polygon, Ellipse, Triangle as FabricTriangle, Line, Path } from "fabric";
-import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  Canvas,
+  Rect,
+  Circle,
+  FabricObject,
+  Textbox,
+  loadSVGFromString,
+  util,
+  FabricObjectProps,
+  SerializedObjectProps,
+  ObjectEvents,
+} from "fabric";
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface CanvasContextType {
   canvas: Canvas | null;
   canvasRef: React.RefObject<HTMLCanvasElement | null> | null;
-  setCanvas: Dispatch<SetStateAction<Canvas | null>>;
-  addCanvasShape: ((shapeType: string) => void) | null;
+  layers: FabricObject[];
+  selectedObject: FabricObject | null;
+  setSelectedObject: Dispatch<SetStateAction<FabricObject | null>>;
+  canvasWidth: number;
+  canvasHeight: number;
+  setCanvasWidth: Dispatch<SetStateAction<number>>;
+  setCanvasHeight: Dispatch<SetStateAction<number>>;
+  addText: () => void;
+  addRectangle: () => void;
+  addCircle: () => void;
+  addSvgBackground: (svgString: string) => void;
+  updateTextProperties: (properties: Partial<Textbox>) => void;
+  toggleVisibility: (object: FabricObject) => void;
+  exportCanvas: () => void;
 }
 
 // Create context with default values
 export const CanvasContext = createContext<CanvasContextType>({
   canvas: null,
   canvasRef: null,
-  setCanvas: () => null,
-  addCanvasShape: null,
+  layers: [],
+  selectedObject: null,
+  setSelectedObject: () => {},
+  canvasWidth: 800,
+  canvasHeight: 800,
+  setCanvasWidth: () => {},
+  setCanvasHeight: () => {},
+  addText: () => {},
+  addRectangle: () => {},
+  addCircle: () => {},
+  addSvgBackground: () => {},
+  updateTextProperties: () => {},
+  toggleVisibility: () => {},
+  exportCanvas: () => {},
 });
 
-export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(
+    null
+  );
+  const [canvasWidth, setCanvasWidth] = useState<number>(800);
+  const [canvasHeight, setCanvasHeight] = useState<number>(800);
+  const [layers, setLayers] = useState<FabricObject[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (canvasRef.current) {
-      const initCanvas = new Canvas(canvasRef.current, {
-        width: 500,
-        height: 500,
-      });
-
-      initCanvas.backgroundColor = "#FFF";
-      initCanvas.renderAll();
-
-      setCanvas(initCanvas);
-
-      return () => {
-        initCanvas.dispose();
-      };
-    }
-  }, []);
-
-  const addCanvasShape = (shapeType: string) => {
-    let shape;
-
-    switch (shapeType) {
-      case "rect":
-        shape = new Rect({
-          left: 100,
-          top: 100,
-          width: 150,
-          height: 150,
-          fill: "blue",
-        });
-        break;
-      case "circle":
-        shape = new FabricCircle({
-          left: 100,
-          top: 100,
-          radius: 75,
-          fill: "green",
-        });
-        break;
-      case "triangle":
-        shape = new FabricTriangle({
-          left: 100,
-          top: 100,
-          width: 150,
-          height: 150,
-          fill: "red",
-        });
-        break;
-      case "line":
-        shape = new Line([100, 100, 200, 200], {
-          stroke: "purple",
-          strokeWidth: 5,
-        });
-        break;
-      case "polygon":
-        shape = new Polygon(
-          [
-            { x: 100, y: 100 },
-            { x: 150, y: 50 },
-            { x: 200, y: 100 },
-            { x: 150, y: 150 },
-          ],
-          {
-            fill: "orange",
-            stroke: "black",
-            strokeWidth: 2,
-          }
-        );
-        break;
-      case "path":
-        shape = new Path("M 100 100 Q 200 200, 100 300", {
-          fill: "transparent",
-          stroke: "black",
-          strokeWidth: 5,
-        });
-        break;
-      case "ellipse":
-        shape = new Ellipse({
-          left: 100,
-          top: 100,
-          rx: 100,
-          ry: 60,
-          fill: "pink",
-        });
-        break;
-      case "star":
-        shape = new Polygon(
-          [
-            { x: 200, y: 50 },
-            { x: 220, y: 90 },
-            { x: 270, y: 90 },
-            { x: 230, y: 130 },
-            { x: 250, y: 170 },
-            { x: 200, y: 150 },
-            { x: 150, y: 170 },
-            { x: 170, y: 130 },
-            { x: 130, y: 90 },
-            { x: 180, y: 90 },
-          ],
-          {
-            fill: "yellow",
-            stroke: "black",
-            strokeWidth: 2,
-          }
-        );
-        break;
-      default:
-        break;
+    if (canvas) {
+      canvas.dispose();
     }
 
-    if (shape) {
-      canvas?.add(shape);
-      canvas?.renderAll();
-    }
+    if (!canvasRef.current) return;
 
-    console.log("Add canvas shape works...");
+    const initCanvas = new Canvas(canvasRef.current, {
+      width: canvasWidth,
+      height: canvasHeight,
+      backgroundColor: "#ffffff",
+    });
+
+    initCanvas.on("selection:created", (e) => {
+      if (e.selected && e.selected.length > 0) {
+        setSelectedObject(e.selected[0]);
+      }
+    });
+
+    initCanvas.on("selection:updated", (e) => {
+      if (e.selected && e.selected.length > 0) {
+        setSelectedObject(e.selected[0]);
+      }
+    });
+
+    initCanvas.on("selection:cleared", () => {
+      setSelectedObject(null);
+    });
+
+    setCanvas(initCanvas);
+
+    return () => {
+      initCanvas.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasWidth, canvasHeight]);
+
+  const updateLayers = () => {
+    if (!canvas) return;
+    setLayers(canvas.getObjects());
   };
 
+  const addText = (): void => {
+    if (!canvas) return;
+
+    const text = new Textbox("Edit This Text", {
+      left: 100,
+      top: 100,
+      width: 200,
+      fontFamily: "Arial",
+      fontSize: 30,
+      fill: "#000000",
+      padding: 10,
+      borderColor: "#000000",
+    });
+
+    canvas.add(text);
+    canvas.setActiveObject(text);
+    canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const addRectangle = (): void => {
+    if (!canvas) return;
+
+    const rect = new Rect({
+      left: 100,
+      top: 100,
+      width: 100,
+      height: 100,
+      fill: "#f00",
+    });
+
+    canvas.add(rect);
+    canvas.setActiveObject(rect);
+    canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const addCircle = (): void => {
+    if (!canvas) return;
+
+    const circle = new Circle({
+      left: 100,
+      top: 100,
+      radius: 50,
+      fill: "#00f",
+    });
+
+    canvas.add(circle);
+    canvas.setActiveObject(circle);
+    canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const addSvgBackground = async (svgString: string): Promise<void> => {
+    if (!canvas) return;
+
+    const result = await loadSVGFromString(svgString);
+    const { objects, options } = result;
+
+    const filteredObjects = objects.filter(
+      (
+        obj
+      ): obj is FabricObject<
+        Partial<FabricObjectProps>,
+        SerializedObjectProps,
+        ObjectEvents
+      > => obj !== null
+    );
+
+    const svgObject = util.groupSVGElements(filteredObjects, options);
+
+    svgObject.set({
+      left: 100,
+      top: 100,
+      scaleX: 0.5,
+      scaleY: 0.5,
+    });
+
+    canvas.add(svgObject);
+    canvas.requestRenderAll();
+    updateLayers();
+  };
+
+  const updateTextProperties = (properties: Partial<Textbox>): void => {
+    if (!canvas || !selectedObject || selectedObject.type !== "textbox") return;
+
+    const textbox = selectedObject as Textbox;
+
+    Object.entries(properties).forEach(([prop, value]) => {
+      if (prop === "x") {
+        textbox.setX(+value!);
+      } else if (prop === "y") {
+        textbox.setY(+value!);
+      } else {
+        textbox.set(prop as keyof Textbox, value);
+      }
+    });
+
+    canvas.requestRenderAll();
+  };
+
+  const toggleVisibility = (object: FabricObject): void => {
+    if (!canvas) return;
+
+    const currentOpacity = object.get("opacity");
+    object.set("opacity", currentOpacity === 1 ? 0 : 1); // toggle visibility
+    canvas.requestRenderAll();
+  };
+
+  const exportCanvas = (): void => {
+    if (!canvas) return;
+
+    const dataURL = canvas.toDataURL({
+      format: "png",
+      quality: 1,
+      multiplier: 1,
+    });
+
+    const link = document.createElement("a");
+    link.download = "canvas-design.png";
+    link.href = dataURL;
+    link.click();
+  };
   return (
-    <CanvasContext.Provider value={{ canvas, canvasRef, setCanvas, addCanvasShape }}>{children}</CanvasContext.Provider>
+    <CanvasContext.Provider
+      value={{
+        canvas,
+        canvasRef,
+        layers,
+        selectedObject,
+        setSelectedObject,
+        canvasWidth,
+        setCanvasWidth,
+        canvasHeight,
+        setCanvasHeight,
+        addText,
+        addRectangle,
+        addCircle,
+        addSvgBackground,
+        updateTextProperties,
+        toggleVisibility,
+        exportCanvas,
+      }}
+    >
+      {children}
+    </CanvasContext.Provider>
   );
 };
 
