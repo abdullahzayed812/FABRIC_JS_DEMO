@@ -4,8 +4,9 @@ import {
   TextCursor,
   ChartSpline,
 } from "lucide-react";
-import { BackgroundUploader } from "./BackgroundUploader";
+import { SVGUploader } from "./SVGUploader";
 import { useCanvasContext } from "../context/canvasContext";
+import { ImageUploader } from "./ImageUploader";
 
 export const ToolsPanel = () => {
   const {
@@ -21,7 +22,8 @@ export const ToolsPanel = () => {
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="font-bold text-lg border-b pb-2">Tools</h2>
 
-      <BackgroundUploader />
+      <SVGUploader />
+      <ImageUploader />
 
       <div className="flex items-center gap-4">
         <button

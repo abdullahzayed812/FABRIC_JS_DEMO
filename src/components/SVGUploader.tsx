@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useCanvasContext } from "../context/canvasContext";
 
-export const BackgroundUploader = () => {
+export const SVGUploader = () => {
   const { addSvgBackground } = useCanvasContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -10,7 +10,7 @@ const App: React.FC = () => {
   const { selectedObject } = useCanvasContext();
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="bg-gray-100">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -19,7 +19,7 @@ const App: React.FC = () => {
             <CanvasContainer />
           </div>
 
-          <div className="w-full md:w-1/4 space-y-4">
+          <div className="w-full md:w-1/4 space-y-4 max-h-[80vh] overflow-y-auto">
             <ToolsPanel />
 
             {selectedObject && selectedObject.type === "textbox" && (

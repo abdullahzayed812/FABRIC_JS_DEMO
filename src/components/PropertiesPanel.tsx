@@ -13,33 +13,46 @@ const fontFamilies = [
   "Impact",
 ];
 
+interface PropertiesType {
+  content: string;
+  width: string;
+  height: string;
+  x: string;
+  y: string;
+  fontSize: string;
+  strokeWidth: number;
+}
+
 export const PropertiesPanel = () => {
-  const { selectedObject, canvas, updateTextProperties } = useCanvasContext();
+  const { selectedObject, updateTextProperties } = useCanvasContext();
 
   const isTextObject = selectedObject instanceof Textbox;
 
-  const [properties, setProperties] = useState({
+  const [properties, setProperties] = useState<PropertiesType>({
     content: "",
     width: "",
     height: "",
     x: "",
     y: "",
     fontSize: "",
+    strokeWidth: 0,
   });
 
   useEffect(() => {
     setProperties({
       content: isTextObject ? selectedObject?.text : "",
-      width: selectedObject?.width.toString() || "",
-      height: selectedObject?.height.toString() || "",
-      x: selectedObject?.getX().toString() || "",
-      y: selectedObject?.getY().toString() || "",
+      width: Math.round(selectedObject?.width || 0).toString() || "",
+      height: Math.round(selectedObject?.height || 0).toString() || "",
+      x: Math.round(selectedObject?.getX() || 0).toString() || "",
+      y: Math.round(selectedObject?.getY() || 0).toString() || "",
       fontSize: isTextObject ? selectedObject.fontSize.toString() : "",
+
+      strokeWidth: selectedObject?.strokeWidth || 0,
     });
   }, [selectedObject]);
 
   const handlePropertiesChange = (prop: string, value: string) => {
-    setProperties((prev) => ({ ...prev, [prop]: value }));
+    setProperties((prev) => ({ ...prev, [prop]: +value }));
   };
 
   const updateText = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
@@ -178,6 +191,20 @@ export const PropertiesPanel = () => {
               })
             }
             className="w-full h-8 border rounded"
+          />
+        </div>
+      </div>
+
+      <div>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Stroke Width</label>
+          <input
+            type="number"
+            value={properties.strokeWidth}
+            onChange={(e) =>
+              handleInputChange("strokeWidth", "strokeWidth", e.target.value)
+            }
+            className="w-full border rounded px-2 py-1"
           />
         </div>
       </div>

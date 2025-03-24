@@ -9,6 +9,7 @@ import {
   FabricObjectProps,
   SerializedObjectProps,
   ObjectEvents,
+  FabricImage,
 } from "fabric";
 import {
   Dispatch,
@@ -24,7 +25,8 @@ import {
 interface CanvasContextType {
   canvas: Canvas | null;
   canvasRef: React.RefObject<HTMLCanvasElement | null> | null;
-  layers: FabricObject[];
+  layers: CustomFabricObject[];
+  selectedLayer: string | null;
   selectedObject: FabricObject | null;
   setSelectedObject: Dispatch<SetStateAction<FabricObject | null>>;
   canvasWidth: number;
@@ -35,9 +37,17 @@ interface CanvasContextType {
   addRectangle: () => void;
   addCircle: () => void;
   addSvgBackground: (svgString: string) => void;
+  addImage: (image: string) => void;
   updateTextProperties: (properties: Partial<Textbox>) => void;
   toggleVisibility: (object: FabricObject) => void;
   exportCanvas: () => void;
+  addIdToObject: (object: any) => void;
+  selectLayerInCanvas: (layerId: string) => void;
+}
+
+interface CustomFabricObject extends FabricObject {
+  id?: string;
+  zIndex?: number;
 }
 
 // Create context with default values
@@ -45,6 +55,7 @@ export const CanvasContext = createContext<CanvasContextType>({
   canvas: null,
   canvasRef: null,
   layers: [],
+  selectedLayer: null,
   selectedObject: null,
   setSelectedObject: () => {},
   canvasWidth: 800,
@@ -55,9 +66,12 @@ export const CanvasContext = createContext<CanvasContextType>({
   addRectangle: () => {},
   addCircle: () => {},
   addSvgBackground: () => {},
+  addImage: () => {},
   updateTextProperties: () => {},
   toggleVisibility: () => {},
   exportCanvas: () => {},
+  addIdToObject: () => {},
+  selectLayerInCanvas: () => {},
 });
 
 export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
@@ -69,7 +83,8 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
   );
   const [canvasWidth, setCanvasWidth] = useState<number>(800);
   const [canvasHeight, setCanvasHeight] = useState<number>(800);
-  const [layers, setLayers] = useState<FabricObject[]>([]);
+  const [layers, setLayers] = useState<CustomFabricObject[]>([]);
+  const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -109,9 +124,87 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasWidth, canvasHeight]);
 
+  useEffect(() => {
+    if (canvas) {
+      canvas.on("object:added", updateLayers);
+      canvas.on("object:removed", updateLayers);
+      canvas.on("object:modified", updateLayers);
+
+      canvas.on("selection:created", handleObjectSelected);
+      canvas.on("selection:updated", handleObjectSelected);
+      canvas.on("selection:cleared", handleObjectSelected);
+
+      updateLayers();
+
+      return () => {
+        canvas.off("object:added", updateLayers);
+        canvas.off("object:removed", updateLayers);
+        canvas.off("object:modified", updateLayers);
+        canvas.off("selection:created", handleObjectSelected);
+        canvas.off("selection:updated", handleObjectSelected);
+        canvas.off("selection:cleared", () => setSelectedLayer(null));
+      };
+    }
+  }, [canvas]);
+
+  const addIdToObject = (object: CustomFabricObject) => {
+    if (!object.id) {
+      const timestamp = new Date().getTime();
+      object.id = `${object.type}_${timestamp}`;
+    }
+  };
+
+  const handleObjectSelected = (e: any) => {
+    const selectedObject = e.selected ? e.selected[0] : null;
+
+    if (selectedObject) {
+      setSelectedLayer(selectedObject.id);
+    } else {
+      setSelectedLayer(null);
+    }
+  };
+
+  const selectLayerInCanvas = (layerId: string) => {
+    if (!canvas) return;
+
+    const object = canvas
+      .getObjects()
+      .find((obj: CustomFabricObject) => obj.id === layerId);
+
+    if (object) {
+      canvas.setActiveObject(object);
+      canvas.requestRenderAll();
+    }
+  };
+
+  (Canvas.prototype as any).updateZIndices = function () {
+    const objects = this.getObjects();
+    objects.forEach((obj: any, index: number) => {
+      addIdToObject(obj);
+      obj.zIndex = index;
+    });
+  };
+
   const updateLayers = () => {
     if (!canvas) return;
-    setLayers(canvas.getObjects());
+
+    (canvas as any).updateZIndices();
+
+    const objects = canvas
+      .getObjects()
+      .filter(
+        (obj: CustomFabricObject) =>
+          !(
+            obj.id?.startsWith("vertical-") || obj.id?.startsWith("horizontal-")
+          )
+      )
+      .map((obj: CustomFabricObject) => ({
+        id: obj.id,
+        zIndex: obj.zIndex,
+        type: obj.type,
+      }));
+
+    setLayers([...objects].reverse() as CustomFabricObject[]);
   };
 
   const addText = (): void => {
@@ -131,7 +224,6 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     canvas.add(text);
     canvas.setActiveObject(text);
     canvas.requestRenderAll();
-    updateLayers();
   };
 
   const addRectangle = (): void => {
@@ -148,7 +240,6 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     canvas.add(rect);
     canvas.setActiveObject(rect);
     canvas.requestRenderAll();
-    updateLayers();
   };
 
   const addCircle = (): void => {
@@ -164,7 +255,6 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     canvas.add(circle);
     canvas.setActiveObject(circle);
     canvas.requestRenderAll();
-    updateLayers();
   };
 
   const addSvgBackground = async (svgString: string): Promise<void> => {
@@ -194,7 +284,22 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
 
     canvas.add(svgObject);
     canvas.requestRenderAll();
-    updateLayers();
+  };
+
+  const addImage = async (image: string) => {
+    if (!canvas) return;
+
+    const imageObject = await FabricImage.fromURL(image);
+
+    imageObject.set({
+      left: 100,
+      top: 100,
+      scaleX: 0.5,
+      scaleY: 0.5,
+    });
+
+    canvas.add(imageObject);
+    canvas.requestRenderAll();
   };
 
   const updateTextProperties = (properties: Partial<Textbox>): void => {
@@ -237,12 +342,14 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     link.href = dataURL;
     link.click();
   };
+
   return (
     <CanvasContext.Provider
       value={{
         canvas,
         canvasRef,
         layers,
+        selectedLayer,
         selectedObject,
         setSelectedObject,
         canvasWidth,
@@ -253,9 +360,12 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
         addRectangle,
         addCircle,
         addSvgBackground,
+        addImage,
         updateTextProperties,
         toggleVisibility,
         exportCanvas,
+        addIdToObject,
+        selectLayerInCanvas,
       }}
     >
       {children}
