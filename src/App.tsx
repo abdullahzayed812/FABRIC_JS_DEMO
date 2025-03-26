@@ -22,11 +22,11 @@ const App: React.FC = () => {
           <div className="w-full md:w-1/4 space-y-4 max-h-[80vh] overflow-y-auto">
             <ToolsPanel />
 
+            <LayersPanel />
+
             {selectedObject && selectedObject.type === "textbox" && (
               <PropertiesPanel />
             )}
-
-            <LayersPanel />
           </div>
         </div>
       </div>

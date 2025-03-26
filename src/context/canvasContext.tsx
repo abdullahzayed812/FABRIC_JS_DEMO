@@ -43,6 +43,7 @@ interface CanvasContextType {
   exportCanvas: () => void;
   addIdToObject: (object: any) => void;
   selectLayerInCanvas: (layerId: string) => void;
+  moveSelectedLayer: (direction: "UP" | "DOWN") => void;
 }
 
 interface CustomFabricObject extends FabricObject {
@@ -72,6 +73,7 @@ export const CanvasContext = createContext<CanvasContextType>({
   exportCanvas: () => {},
   addIdToObject: () => {},
   selectLayerInCanvas: () => {},
+  moveSelectedLayer: () => {},
 });
 
 export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
@@ -174,6 +176,47 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     if (object) {
       canvas.setActiveObject(object);
       canvas.requestRenderAll();
+    }
+  };
+
+  const moveSelectedLayer = (direction: "UP" | "DOWN") => {
+    if (!selectedLayer || !canvas) return;
+
+    const objects = canvas.getObjects();
+    const object = objects.find(
+      (obj: CustomFabricObject) => obj.id === selectedLayer
+    );
+
+    if (object) {
+      const currentIndex = objects.indexOf(object);
+
+      if (direction === "UP" && currentIndex < objects.length - 1) {
+        const temp = objects[currentIndex];
+        objects[currentIndex] = objects[currentIndex + 1];
+        objects[currentIndex + 1] = temp;
+      } else if (direction === "DOWN" && currentIndex > 0) {
+        const temp = objects[currentIndex];
+        objects[currentIndex] = objects[currentIndex - 1];
+        objects[currentIndex - 1] = temp;
+      }
+
+      const backgroundColor = canvas.backgroundColor;
+
+      canvas.clear();
+
+      objects.forEach((obj) => canvas.add(obj));
+
+      canvas.backgroundColor = backgroundColor;
+
+      canvas.requestRenderAll();
+
+      objects.forEach((obj: CustomFabricObject, index) => (obj.zIndex = index));
+
+      canvas.setActiveObject(object);
+
+      canvas.requestRenderAll();
+
+      updateLayers();
     }
   };
 
@@ -337,10 +380,12 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
       multiplier: 1,
     });
 
-    const link = document.createElement("a");
-    link.download = "canvas-design.png";
-    link.href = dataURL;
-    link.click();
+    console.log(dataURL);
+
+    // const link = document.createElement("a");
+    // link.download = "canvas-design.png";
+    // link.href = dataURL;
+    // link.click();
   };
 
   return (
@@ -366,6 +411,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
         exportCanvas,
         addIdToObject,
         selectLayerInCanvas,
+        moveSelectedLayer,
       }}
     >
       {children}
