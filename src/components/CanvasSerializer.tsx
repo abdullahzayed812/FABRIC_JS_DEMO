@@ -1,5 +1,4 @@
-import { Canvas, util } from "fabric";
-import { CustomFabricObject } from "./types"; // Assuming you have a types file
+import { Canvas, FabricObject, util } from "fabric";
 import { useState } from "react";
 
 interface CanvasTemplate {
@@ -11,26 +10,16 @@ interface CanvasTemplate {
 }
 
 class CanvasSerializer {
-  /**
-   * Serialize the entire canvas to a JSON string
-   * @param canvas Fabric Canvas instance
-   * @returns Serialized canvas template
-   */
   static serializeCanvas(canvas: Canvas): CanvasTemplate {
     return {
       version: "1.0",
-      objects: canvas.toJSON(["id", "zIndex"]).objects,
+      objects: canvas.toJSON().objects,
       background: canvas.backgroundColor as string,
       width: canvas.width || 800,
       height: canvas.height || 800,
     };
   }
 
-  /**
-   * Save canvas to localStorage
-   * @param canvas Fabric Canvas instance
-   * @param key Storage key
-   */
   static saveToLocalStorage(canvas: Canvas, key: string = "canvasTemplate") {
     try {
       const serializedCanvas = this.serializeCanvas(canvas);
@@ -40,16 +29,7 @@ class CanvasSerializer {
     }
   }
 
-  /**
-   * Load canvas from localStorage
-   * @param canvas Fabric Canvas instance
-   * @param key Storage key
-   * @returns Loaded template or null
-   */
-  static loadFromLocalStorage(
-    canvas: Canvas,
-    key: string = "canvasTemplate"
-  ): CanvasTemplate | null {
+  static loadFromLocalStorage(canvas: Canvas, key: string = "canvasTemplate"): CanvasTemplate | null {
     try {
       const savedTemplate = localStorage.getItem(key);
       return savedTemplate ? JSON.parse(savedTemplate) : null;
@@ -59,15 +39,7 @@ class CanvasSerializer {
     }
   }
 
-  /**
-   * Export canvas to downloadable JSON file
-   * @param canvas Fabric Canvas instance
-   * @param filename Filename for the export
-   */
-  static exportToFile(
-    canvas: Canvas,
-    filename: string = "canvas-template.json"
-  ) {
+  static exportToFile(canvas: Canvas, filename: string = "canvas-template.json") {
     const serializedCanvas = this.serializeCanvas(canvas);
     const blob = new Blob([JSON.stringify(serializedCanvas, null, 2)], {
       type: "application/json",
@@ -80,12 +52,6 @@ class CanvasSerializer {
     URL.revokeObjectURL(link.href);
   }
 
-  /**
-   * Import canvas template from a file
-   * @param canvas Fabric Canvas instance
-   * @param file File object
-   * @returns Promise resolving to the loaded template
-   */
   static importFromFile(canvas: Canvas, file: File): Promise<CanvasTemplate> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -95,18 +61,15 @@ class CanvasSerializer {
           const templateContent = event.target?.result as string;
           const parsedTemplate: CanvasTemplate = JSON.parse(templateContent);
 
-          // Clear existing canvas
           canvas.clear();
 
-          // Set canvas dimensions
           canvas.set("width", parsedTemplate.width);
           canvas.set("height", parsedTemplate.height);
           canvas.backgroundColor = parsedTemplate.background;
 
-          // Load objects
           parsedTemplate.objects.forEach((objData) => {
-            util.enlivenObjects([objData], (objects) => {
-              objects.forEach((obj) => {
+            util.enlivenObjects([objData], (objects: FabricObject[]) => {
+              objects.forEach((obj: FabricObject) => {
                 canvas.add(obj);
               });
               canvas.renderAll();
@@ -125,7 +88,6 @@ class CanvasSerializer {
   }
 }
 
-// React Hook for managing canvas save/load
 export const useCanvasSaveLoad = (canvas: Canvas | null) => {
   const saveToLocalStorage = (key?: string) => {
     if (canvas) {
@@ -161,20 +123,12 @@ export const useCanvasSaveLoad = (canvas: Canvas | null) => {
   };
 };
 
-// Example usage in a React component
 export const CanvasTemplateManager: React.FC = () => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const {
-    saveToLocalStorage,
-    loadFromLocalStorage,
-    exportTemplate,
-    importTemplate,
-  } = useCanvasSaveLoad(canvas);
+  const { saveToLocalStorage, loadFromLocalStorage, exportTemplate, importTemplate } = useCanvasSaveLoad(canvas);
 
   // File input handler for importing
-  const handleFileImport = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && canvas) {
       try {
@@ -187,16 +141,10 @@ export const CanvasTemplateManager: React.FC = () => {
 
   return (
     <div>
-      <button onClick={() => saveToLocalStorage()}>
-        Save Template to Local Storage
-      </button>
-      <button onClick={() => loadFromLocalStorage()}>
-        Load Template from Local Storage
-      </button>
+      <button onClick={() => saveToLocalStorage()}>Save Template to Local Storage</button>
+      <button onClick={() => loadFromLocalStorage()}>Load Template from Local Storage</button>
       <button onClick={() => exportTemplate()}>Export Template</button>
       <input type="file" accept=".json" onChange={handleFileImport} />
     </div>
   );
 };
-
-export default CanvasSerializer;

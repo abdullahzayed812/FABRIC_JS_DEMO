@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCanvasContext } from "../context/canvasContext";
-import { Textbox } from "fabric";
+import { Circle, Textbox, TFiller } from "fabric";
 
 const fontFamilies = [
   "Arial",
@@ -21,12 +21,17 @@ interface PropertiesType {
   y: string;
   fontSize: string;
   strokeWidth: number;
+  stroke: string | TFiller;
+  backgroundColor: string;
+  fill: string | TFiller;
+  radius: number;
 }
 
 export const PropertiesPanel = () => {
-  const { selectedObject, updateTextProperties } = useCanvasContext();
+  const { selectedObject, updateObjectProperties } = useCanvasContext();
 
-  const isTextObject = selectedObject instanceof Textbox;
+  const isTextbox = selectedObject instanceof Textbox;
+  const isCircle = selectedObject instanceof Circle;
 
   const [properties, setProperties] = useState<PropertiesType>({
     content: "",
@@ -36,20 +41,27 @@ export const PropertiesPanel = () => {
     y: "",
     fontSize: "",
     strokeWidth: 0,
+    stroke: "",
+    backgroundColor: "",
+    fill: "",
+    radius: 0,
   });
 
   useEffect(() => {
     setProperties({
-      content: isTextObject ? selectedObject?.text : "",
+      content: isTextbox ? selectedObject?.text : "",
       width: Math.round(selectedObject?.width || 0).toString() || "",
       height: Math.round(selectedObject?.height || 0).toString() || "",
       x: Math.round(selectedObject?.getX() || 0).toString() || "",
       y: Math.round(selectedObject?.getY() || 0).toString() || "",
-      fontSize: isTextObject ? selectedObject.fontSize.toString() : "",
-
+      fontSize: isTextbox ? selectedObject.fontSize.toString() : "",
       strokeWidth: selectedObject?.strokeWidth || 0,
+      stroke: selectedObject?.stroke || "",
+      backgroundColor: selectedObject?.backgroundColor || "",
+      fill: selectedObject?.fill || "",
+      radius: isCircle ? selectedObject.radius : 0,
     });
-  }, [selectedObject]);
+  }, [selectedObject, isTextbox, isCircle]);
 
   const handlePropertiesChange = (prop: string, value: string) => {
     setProperties((prev) => ({ ...prev, [prop]: +value }));
@@ -61,55 +73,55 @@ export const PropertiesPanel = () => {
     selectedObject?.canvas?.requestRenderAll();
   };
 
-  const handleInputChange = (
-    inputType: string,
-    propType: string,
-    value: string
-  ) => {
+  const handleInputChange = (propType: string, value: string) => {
     handlePropertiesChange(propType, value);
-    updateTextProperties({ [inputType]: parseInt(value) });
+    updateObjectProperties({ [propType]: parseInt(value) });
   };
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="font-bold text-lg border-b pb-2">Properties Panel</h2>
 
-      {isTextObject ? (
+      {isTextbox ? (
         <div className="space-y-2">
           <label className="block text-sm font-medium">Text Content</label>
-          <textarea
-            value={properties.content}
-            onChange={updateText}
-            className="w-full border rounded px-2 py-1 h-20"
-          />
+          <textarea value={properties.content} onChange={updateText} className="w-full border rounded px-2 py-1 h-20" />
         </div>
       ) : null}
 
       <div className="space-y-2">
-        <div className="flex gap-2">
+        {!isCircle ? (
+          <div className="flex gap-2">
+            <div>
+              <label className="block text-sm mb-2">Width</label>
+              <input
+                type="number"
+                value={properties.width}
+                onChange={(e) => handleInputChange("width", e.target.value)}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-2">Height</label>
+              <input
+                type="number"
+                value={properties.height}
+                onChange={(e) => handleInputChange("height", e.target.value)}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+          </div>
+        ) : (
           <div>
-            <label className="block text-sm mb-2">Width</label>
+            <label className="block text-sm mb-2">Radius</label>
             <input
               type="number"
-              value={properties.width}
-              onChange={(e) =>
-                handleInputChange("width", "width", e.target.value)
-              }
+              value={properties.radius}
+              onChange={(e) => handleInputChange("radius", e.target.value)}
               className="w-full border rounded px-2 py-1"
             />
           </div>
-          <div>
-            <label className="block text-sm mb-2">Height</label>
-            <input
-              type="number"
-              value={properties.height}
-              onChange={(e) =>
-                handleInputChange("height", "height", e.target.value)
-              }
-              className="w-full border rounded px-2 py-1"
-            />
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -119,7 +131,7 @@ export const PropertiesPanel = () => {
             <input
               type="number"
               value={properties.x}
-              onChange={(e) => handleInputChange("x", "x", e.target.value)}
+              onChange={(e) => handleInputChange("x", e.target.value)}
               className="w-full border rounded px-2 py-1"
             />
           </div>
@@ -128,21 +140,19 @@ export const PropertiesPanel = () => {
             <input
               type="number"
               value={properties.y}
-              onChange={(e) => handleInputChange("y", "y", e.target.value)}
+              onChange={(e) => handleInputChange("y", e.target.value)}
               className="w-full border rounded px-2 py-1"
             />
           </div>
         </div>
       </div>
 
-      {isTextObject ? (
+      {isTextbox ? (
         <div className="space-y-2">
           <label className="block text-sm font-medium">Font Family</label>
           <select
             value={selectedObject?.fontFamily}
-            onChange={(e) =>
-              updateTextProperties({ fontFamily: e.target.value })
-            }
+            onChange={(e) => updateObjectProperties({ fontFamily: e.target.value })}
             className="w-full border rounded px-2 py-1"
           >
             {fontFamilies.map((font) => (
@@ -154,42 +164,52 @@ export const PropertiesPanel = () => {
         </div>
       ) : null}
 
-      {isTextObject ? (
+      {isTextbox ? (
         <div className="space-y-2">
           <label className="block text-sm font-medium">Font Size</label>
           <input
             type="number"
             value={properties.fontSize}
-            onChange={(e) =>
-              handleInputChange("fontSize", "fontSize", e.target.value)
-            }
+            onChange={(e) => handleInputChange("fontSize", e.target.value)}
             className="w-full border rounded px-2 py-1"
           />
         </div>
       ) : null}
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Text Color</label>
-          <input
-            type="color"
-            value={selectedObject?.fill as string}
-            onChange={(e) => updateTextProperties({ fill: e.target.value })}
-            className="w-full h-8 border rounded"
-          />
-        </div>
+        {isTextbox ? (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Text Color</label>
+            <input
+              type="color"
+              value={properties.fill as string}
+              onChange={(e) => updateObjectProperties({ fill: e.target.value })}
+              className="w-full h-8 border rounded"
+            />
+          </div>
+        ) : null}
+
+        {!isTextbox ? (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Stroke Color</label>
+            <input
+              type="color"
+              value={properties.stroke as string}
+              onChange={(e) => updateObjectProperties({ stroke: e.target.value })}
+              className="w-full h-8 border rounded"
+            />
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">Background</label>
           <input
             type="color"
-            value={(selectedObject?.backgroundColor as string) || "#ffffff"}
-            onChange={(e) =>
-              updateTextProperties({
-                backgroundColor:
-                  e.target.value === "#ffffff" ? "" : e.target.value,
-              })
-            }
+            value={properties.backgroundColor}
+            onChange={(e) => {
+              const prop = isTextbox ? "backgroundColor" : "fill";
+              updateObjectProperties({ [prop]: e.target.value });
+            }}
             className="w-full h-8 border rounded"
           />
         </div>
@@ -201,59 +221,47 @@ export const PropertiesPanel = () => {
           <input
             type="number"
             value={properties.strokeWidth}
-            onChange={(e) =>
-              handleInputChange("strokeWidth", "strokeWidth", e.target.value)
-            }
+            onChange={(e) => handleInputChange("strokeWidth", e.target.value)}
             className="w-full border rounded px-2 py-1"
           />
         </div>
       </div>
 
-      {isTextObject ? (
+      {isTextbox ? (
         <div className="space-y-2">
           <label className="block text-sm font-medium">Text Style</label>
           <div className="flex space-x-2">
             <button
               onClick={() =>
-                updateTextProperties({
-                  fontWeight:
-                    selectedObject?.fontWeight === "bold" ? "normal" : "bold",
+                updateObjectProperties({
+                  fontWeight: selectedObject?.fontWeight === "bold" ? "normal" : "bold",
                 })
               }
               className={`px-3 py-1 border rounded ${
-                selectedObject?.fontWeight === "bold"
-                  ? "bg-gray-300"
-                  : "bg-white"
+                selectedObject?.fontWeight === "bold" ? "bg-gray-300" : "bg-white"
               }`}
             >
               B
             </button>
             <button
               onClick={() =>
-                updateTextProperties({
-                  fontStyle:
-                    selectedObject?.fontStyle === "italic"
-                      ? "normal"
-                      : "italic",
+                updateObjectProperties({
+                  fontStyle: selectedObject?.fontStyle === "italic" ? "normal" : "italic",
                 })
               }
               className={`px-3 py-1 border rounded ${
-                selectedObject?.fontStyle === "italic"
-                  ? "bg-gray-300"
-                  : "bg-white"
+                selectedObject?.fontStyle === "italic" ? "bg-gray-300" : "bg-white"
               }`}
             >
               I
             </button>
             <button
               onClick={() =>
-                updateTextProperties({
+                updateObjectProperties({
                   underline: !selectedObject?.underline,
                 })
               }
-              className={`px-3 py-1 border rounded ${
-                selectedObject?.underline ? "bg-gray-300" : "bg-white"
-              }`}
+              className={`px-3 py-1 border rounded ${selectedObject?.underline ? "bg-gray-300" : "bg-white"}`}
             >
               U
             </button>

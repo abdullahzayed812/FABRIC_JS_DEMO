@@ -1,23 +1,14 @@
-import {
-  RectangleHorizontal,
-  Circle,
-  TextCursor,
-  ChartSpline,
-} from "lucide-react";
+import { RectangleHorizontal, Circle, TextCursor, ChartSpline } from "lucide-react";
 import { SVGUploader } from "./SVGUploader";
 import { useCanvasContext } from "../context/canvasContext";
 import { ImageUploader } from "./ImageUploader";
+import { FabricShapeGenerator } from "./ShapeGenerator";
 
 export const ToolsPanel = () => {
-  const {
-    addText,
-    addRectangle,
-    addCircle,
-    canvasWidth,
-    canvasHeight,
-    setCanvasWidth,
-    setCanvasHeight,
-  } = useCanvasContext();
+  const { canvas, canvasWidth, canvasHeight, setCanvasWidth, setCanvasHeight } = useCanvasContext();
+
+  const fabricShapeGenerator = new FabricShapeGenerator(canvas);
+
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="font-bold text-lg border-b pb-2">Tools</h2>
@@ -27,25 +18,25 @@ export const ToolsPanel = () => {
 
       <div className="flex items-center gap-4">
         <button
-          onClick={addText}
+          onClick={() => fabricShapeGenerator.createText()}
           className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
         >
           <TextCursor />
         </button>
         <button
-          onClick={addRectangle}
+          onClick={() => fabricShapeGenerator.createRectangle()}
           className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
         >
           <RectangleHorizontal />
         </button>
         <button
-          onClick={addCircle}
+          onClick={() => fabricShapeGenerator.createCircle()}
           className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
         >
           <Circle />
         </button>
         <button
-          onClick={() => {}}
+          onClick={() => fabricShapeGenerator.createLine([200, 200, 350, 250])}
           className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
         >
           <ChartSpline />
@@ -60,7 +51,7 @@ export const ToolsPanel = () => {
             <input
               type="number"
               value={canvasWidth}
-              onChange={(e) => setCanvasWidth(parseInt(e.target.value) || 100)}
+              onChange={(e) => setCanvasWidth(parseInt(e.target.value))}
               className="w-full border rounded px-2 py-1"
             />
           </div>
@@ -69,7 +60,7 @@ export const ToolsPanel = () => {
             <input
               type="number"
               value={canvasHeight}
-              onChange={(e) => setCanvasHeight(parseInt(e.target.value) || 100)}
+              onChange={(e) => setCanvasHeight(parseInt(e.target.value))}
               className="w-full border rounded px-2 py-1"
             />
           </div>

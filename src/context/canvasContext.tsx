@@ -11,16 +11,7 @@ import {
   ObjectEvents,
   FabricImage,
 } from "fabric";
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useEffect, useRef, useState } from "react";
 
 interface CanvasContextType {
   canvas: Canvas | null;
@@ -38,7 +29,7 @@ interface CanvasContextType {
   addCircle: () => void;
   addSvgBackground: (svgString: string) => void;
   addImage: (image: string) => void;
-  updateTextProperties: (properties: Partial<Textbox>) => void;
+  updateObjectProperties: (properties: Partial<Textbox>) => void;
   toggleVisibility: (object: FabricObject) => void;
   exportCanvas: () => void;
   addIdToObject: (object: any) => void;
@@ -68,7 +59,7 @@ export const CanvasContext = createContext<CanvasContextType>({
   addCircle: () => {},
   addSvgBackground: () => {},
   addImage: () => {},
-  updateTextProperties: () => {},
+  updateObjectProperties: () => {},
   toggleVisibility: () => {},
   exportCanvas: () => {},
   addIdToObject: () => {},
@@ -76,13 +67,9 @@ export const CanvasContext = createContext<CanvasContextType>({
   moveSelectedLayer: () => {},
 });
 
-export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(
-    null
-  );
+  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
   const [canvasWidth, setCanvasWidth] = useState<number>(800);
   const [canvasHeight, setCanvasHeight] = useState<number>(800);
   const [layers, setLayers] = useState<CustomFabricObject[]>([]);
@@ -169,9 +156,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
   const selectLayerInCanvas = (layerId: string) => {
     if (!canvas) return;
 
-    const object = canvas
-      .getObjects()
-      .find((obj: CustomFabricObject) => obj.id === layerId);
+    const object = canvas.getObjects().find((obj: CustomFabricObject) => obj.id === layerId);
 
     if (object) {
       canvas.setActiveObject(object);
@@ -183,9 +168,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     if (!selectedLayer || !canvas) return;
 
     const objects = canvas.getObjects();
-    const object = objects.find(
-      (obj: CustomFabricObject) => obj.id === selectedLayer
-    );
+    const object = objects.find((obj: CustomFabricObject) => obj.id === selectedLayer);
 
     if (object) {
       const currentIndex = objects.indexOf(object);
@@ -235,12 +218,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
 
     const objects = canvas
       .getObjects()
-      .filter(
-        (obj: CustomFabricObject) =>
-          !(
-            obj.id?.startsWith("vertical-") || obj.id?.startsWith("horizontal-")
-          )
-      )
+      .filter((obj: CustomFabricObject) => !(obj.id?.startsWith("vertical-") || obj.id?.startsWith("horizontal-")))
       .map((obj: CustomFabricObject) => ({
         id: obj.id,
         zIndex: obj.zIndex,
@@ -307,13 +285,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     const { objects, options } = result;
 
     const filteredObjects = objects.filter(
-      (
-        obj
-      ): obj is FabricObject<
-        Partial<FabricObjectProps>,
-        SerializedObjectProps,
-        ObjectEvents
-      > => obj !== null
+      (obj): obj is FabricObject<Partial<FabricObjectProps>, SerializedObjectProps, ObjectEvents> => obj !== null
     );
 
     const svgObject = util.groupSVGElements(filteredObjects, options);
@@ -345,18 +317,16 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
     canvas.requestRenderAll();
   };
 
-  const updateTextProperties = (properties: Partial<Textbox>): void => {
-    if (!canvas || !selectedObject || selectedObject.type !== "textbox") return;
-
-    const textbox = selectedObject as Textbox;
+  const updateObjectProperties = (properties: Partial<Textbox>): void => {
+    if (!canvas || !selectedObject) return;
 
     Object.entries(properties).forEach(([prop, value]) => {
       if (prop === "x") {
-        textbox.setX(+value!);
+        selectedObject.setX(+value!);
       } else if (prop === "y") {
-        textbox.setY(+value!);
+        selectedObject.setY(+value!);
       } else {
-        textbox.set(prop as keyof Textbox, value);
+        selectedObject.set(prop as keyof Textbox, value);
       }
     });
 
@@ -374,11 +344,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
   const exportCanvas = (): void => {
     if (!canvas) return;
 
-    const dataURL = canvas.toDataURL({
-      format: "png",
-      quality: 1,
-      multiplier: 1,
-    });
+    const dataURL = canvas.toJSON().objects;
 
     console.log(dataURL);
 
@@ -406,7 +372,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({
         addCircle,
         addSvgBackground,
         addImage,
-        updateTextProperties,
+        updateObjectProperties,
         toggleVisibility,
         exportCanvas,
         addIdToObject,

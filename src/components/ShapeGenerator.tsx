@@ -1,5 +1,4 @@
-import { fabric } from "fabric";
-import { Canvas, Object as FabricObject } from "fabric/fabric-impl";
+import { Canvas, Circle, Ellipse, FabricObject, Line, Polygon, Rect, Textbox, Triangle } from "fabric";
 
 interface ShapeOptions {
   fill?: string;
@@ -11,17 +10,35 @@ interface ShapeOptions {
   top?: number;
 }
 
-class FabricShapeGenerator {
-  /**
-   * Create a rectangle
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric rectangle object
-   */
-  static createRectangle(
-    canvas: Canvas,
-    options: ShapeOptions = {}
-  ): fabric.Rect {
+export class FabricShapeGenerator {
+  constructor(private canvas: Canvas | null) {}
+
+  public createText(options: ShapeOptions = {}): Textbox | undefined {
+    if (!this.canvas) return;
+
+    const defaultOptions = {
+      left: 100,
+      top: 100,
+      width: 200,
+      fontFamily: "Arial",
+      fontSize: 30,
+      fill: "#000000",
+      padding: 10,
+      borderColor: "#000000",
+    };
+
+    const text = new Textbox("Edit This Text", { ...defaultOptions, options });
+
+    this.canvas.add(text);
+    this.canvas.setActiveObject(text);
+    this.canvas.requestRenderAll();
+
+    return text;
+  }
+
+  public createRectangle(options: ShapeOptions = {}): Rect | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       fill: "red",
       width: 100,
@@ -31,24 +48,19 @@ class FabricShapeGenerator {
       stroke: "black",
       strokeWidth: 2,
     };
-    const rect = new fabric.Rect({
-      ...defaultOptions,
-      ...options,
-    });
-    canvas.add(rect);
+
+    const rect = new Rect({ ...defaultOptions, ...options });
+
+    this.canvas.add(rect);
+    this.canvas.setActiveObject(rect);
+    this.canvas.requestRenderAll();
+
     return rect;
   }
 
-  /**
-   * Create a circle
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric circle object
-   */
-  static createCircle(
-    canvas: Canvas,
-    options: ShapeOptions = {}
-  ): fabric.Circle {
+  public createCircle(options: ShapeOptions = {}): Circle | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       fill: "blue",
       radius: 50,
@@ -57,24 +69,22 @@ class FabricShapeGenerator {
       stroke: "black",
       strokeWidth: 2,
     };
-    const circle = new fabric.Circle({
+
+    const circle = new Circle({
       ...defaultOptions,
       ...options,
     });
-    canvas.add(circle);
+
+    this.canvas.add(circle);
+    this.canvas.setActiveObject(circle);
+    this.canvas.requestRenderAll();
+
     return circle;
   }
 
-  /**
-   * Create a triangle
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric triangle object
-   */
-  static createTriangle(
-    canvas: Canvas,
-    options: ShapeOptions = {}
-  ): fabric.Triangle {
+  public createTriangle(options: ShapeOptions = {}): Triangle | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       fill: "green",
       width: 100,
@@ -84,24 +94,22 @@ class FabricShapeGenerator {
       stroke: "black",
       strokeWidth: 2,
     };
-    const triangle = new fabric.Triangle({
+
+    const triangle = new Triangle({
       ...defaultOptions,
       ...options,
     });
-    canvas.add(triangle);
+
+    this.canvas.add(triangle);
+    this.canvas.setActiveObject(triangle);
+    this.canvas.requestRenderAll();
+
     return triangle;
   }
 
-  /**
-   * Create an ellipse
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric ellipse object
-   */
-  static createEllipse(
-    canvas: Canvas,
-    options: ShapeOptions = {}
-  ): fabric.Ellipse {
+  public createEllipse(options: ShapeOptions = {}): Ellipse | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       fill: "purple",
       rx: 50,
@@ -111,26 +119,22 @@ class FabricShapeGenerator {
       stroke: "black",
       strokeWidth: 2,
     };
-    const ellipse = new fabric.Ellipse({
+
+    const ellipse = new Ellipse({
       ...defaultOptions,
       ...options,
     });
-    canvas.add(ellipse);
+
+    this.canvas.add(ellipse);
+    this.canvas.setActiveObject(ellipse);
+    this.canvas.requestRenderAll();
+
     return ellipse;
   }
 
-  /**
-   * Create a polygon
-   * @param canvas Fabric canvas instance
-   * @param points Array of points for the polygon
-   * @param options Shape customization options
-   * @returns Fabric polygon object
-   */
-  static createPolygon(
-    canvas: Canvas,
-    points: { x: number; y: number }[],
-    options: ShapeOptions = {}
-  ): fabric.Polygon {
+  public createPolygon(points: { x: number; y: number }[], options: ShapeOptions = {}): Polygon | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       fill: "orange",
       left: 50,
@@ -138,48 +142,42 @@ class FabricShapeGenerator {
       stroke: "black",
       strokeWidth: 2,
     };
-    const polygon = new fabric.Polygon(points, {
+
+    const polygon = new Polygon(points, {
       ...defaultOptions,
       ...options,
     });
-    canvas.add(polygon);
+
+    this.canvas.add(polygon);
+    this.canvas.setActiveObject(polygon);
+    this.canvas.requestRenderAll();
+
     return polygon;
   }
 
-  /**
-   * Create a line
-   * @param canvas Fabric canvas instance
-   * @param points Start and end points of the line
-   * @param options Shape customization options
-   * @returns Fabric line object
-   */
-  static createLine(
-    canvas: Canvas,
-    points: [number, number, number, number],
-    options: ShapeOptions = {}
-  ): fabric.Line {
+  public createLine(points: [number, number, number, number], options: ShapeOptions = {}): Line | undefined {
+    if (!this.canvas) return;
+
     const defaultOptions = {
       stroke: "black",
       strokeWidth: 2,
     };
-    const line = new fabric.Line(points, {
+
+    const line = new Line(points, {
       ...defaultOptions,
       ...options,
     });
-    canvas.add(line);
+
+    this.canvas.add(line);
+    this.canvas.setActiveObject(line);
+    this.canvas.requestRenderAll();
+
     return line;
   }
 
-  /**
-   * Create a star polygon
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric polygon object representing a star
-   */
-  static createStar(
-    canvas: Canvas,
-    options: ShapeOptions & { points?: number; innerRadius?: number } = {}
-  ): fabric.Polygon {
+  public createStar(options: ShapeOptions & { points?: number; innerRadius?: number } = {}): Polygon | undefined {
+    if (!this.canvas) return;
+
     const {
       points = 5,
       innerRadius = 30,
@@ -191,29 +189,66 @@ class FabricShapeGenerator {
     } = options;
 
     const starPoints = this.generateStarPoints(points, 50, innerRadius);
-    const star = new fabric.Polygon(starPoints, {
+    const star = new Polygon(starPoints, {
       left,
       top,
       fill,
       stroke,
       strokeWidth,
     });
-    canvas.add(star);
+
+    this.canvas.add(star);
+    this.canvas.setActiveObject(star);
+    this.canvas.requestRenderAll();
+
     return star;
   }
 
-  /**
-   * Generate points for a star polygon
-   * @param pointCount Number of points in the star
-   * @param outerRadius Outer radius of the star
-   * @param innerRadius Inner radius of the star
-   * @returns Array of points for the star polygon
-   */
-  private static generateStarPoints(
-    pointCount: number,
-    outerRadius: number,
-    innerRadius: number
-  ): { x: number; y: number }[] {
+  public createRegularPolygon(options: ShapeOptions & { sides?: number } = {}): Polygon | undefined {
+    if (!this.canvas) return;
+
+    const { sides = 6, left = 50, top = 50, fill = "teal", stroke = "black", strokeWidth = 2 } = options;
+
+    const polygonPoints = this.generateRegularPolygonPoints(sides, 50);
+    const polygon = new Polygon(polygonPoints, {
+      left,
+      top,
+      fill,
+      stroke,
+      strokeWidth,
+    });
+
+    this.canvas.add(polygon);
+    this.canvas.setActiveObject(polygon);
+    this.canvas.requestRenderAll();
+
+    return polygon;
+  }
+
+  public createAllShapes(): FabricObject[] {
+    const shapes: FabricObject[] = [
+      this.createRectangle({ left: 50, top: 50 })!,
+      this.createCircle({ left: 200, top: 50 })!,
+      this.createTriangle({ left: 350, top: 50 })!,
+      this.createEllipse({ left: 50, top: 200 })!,
+      this.createLine([200, 200, 350, 250])!,
+      this.createPolygon(
+        [
+          { x: 0, y: 0 },
+          { x: 50, y: 30 },
+          { x: 40, y: 70 },
+          { x: 10, y: 70 },
+        ],
+        { left: 200, top: 200 }
+      )!,
+      this.createStar({ left: 350, top: 200 })!,
+      this.createRegularPolygon({ left: 50, top: 350, sides: 6 })!,
+    ];
+
+    return shapes;
+  }
+
+  private generateStarPoints(pointCount: number, outerRadius: number, innerRadius: number): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     for (let i = 0; i < pointCount * 2; i++) {
       const angle = (i * Math.PI) / pointCount;
@@ -226,47 +261,7 @@ class FabricShapeGenerator {
     return points;
   }
 
-  /**
-   * Create a regular polygon (hexagon, octagon, etc.)
-   * @param canvas Fabric canvas instance
-   * @param options Shape customization options
-   * @returns Fabric polygon object
-   */
-  static createRegularPolygon(
-    canvas: Canvas,
-    options: ShapeOptions & { sides?: number } = {}
-  ): fabric.Polygon {
-    const {
-      sides = 6,
-      left = 50,
-      top = 50,
-      fill = "teal",
-      stroke = "black",
-      strokeWidth = 2,
-    } = options;
-
-    const polygonPoints = this.generateRegularPolygonPoints(sides, 50);
-    const polygon = new fabric.Polygon(polygonPoints, {
-      left,
-      top,
-      fill,
-      stroke,
-      strokeWidth,
-    });
-    canvas.add(polygon);
-    return polygon;
-  }
-
-  /**
-   * Generate points for a regular polygon
-   * @param sides Number of sides
-   * @param radius Radius of the circumscribed circle
-   * @returns Array of points for the polygon
-   */
-  private static generateRegularPolygonPoints(
-    sides: number,
-    radius: number
-  ): { x: number; y: number }[] {
+  private generateRegularPolygonPoints(sides: number, radius: number): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     for (let i = 0; i < sides; i++) {
       const angle = (i * 2 * Math.PI) / sides;
@@ -277,69 +272,4 @@ class FabricShapeGenerator {
     }
     return points;
   }
-
-  /**
-   * Create all available shapes on the canvas
-   * @param canvas Fabric canvas instance
-   * @returns Array of created shape objects
-   */
-  static createAllShapes(canvas: Canvas): FabricObject[] {
-    const shapes: FabricObject[] = [
-      this.createRectangle(canvas, { left: 50, top: 50 }),
-      this.createCircle(canvas, { left: 200, top: 50 }),
-      this.createTriangle(canvas, { left: 350, top: 50 }),
-      this.createEllipse(canvas, { left: 50, top: 200 }),
-      this.createLine(canvas, [200, 200, 350, 250]),
-      this.createPolygon(
-        canvas,
-        [
-          { x: 0, y: 0 },
-          { x: 50, y: 30 },
-          { x: 40, y: 70 },
-          { x: 10, y: 70 },
-        ],
-        { left: 200, top: 200 }
-      ),
-      this.createStar(canvas, { left: 350, top: 200 }),
-      this.createRegularPolygon(canvas, { left: 50, top: 350, sides: 6 }),
-    ];
-
-    return shapes;
-  }
 }
-
-// Example React component to demonstrate shape creation
-export const ShapeGeneratorDemo: React.FC = () => {
-  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const newCanvas = new fabric.Canvas(canvasRef.current, {
-        width: 600,
-        height: 500,
-        backgroundColor: "#f0f0f0",
-      });
-      setCanvas(newCanvas);
-
-      return () => {
-        newCanvas.dispose();
-      };
-    }
-  }, []);
-
-  const handleCreateAllShapes = () => {
-    if (canvas) {
-      FabricShapeGenerator.createAllShapes(canvas);
-    }
-  };
-
-  return (
-    <div>
-      <canvas ref={canvasRef} />
-      <button onClick={handleCreateAllShapes}>Create All Shapes</button>
-    </div>
-  );
-};
-
-export default FabricShapeGenerator;

@@ -10,7 +10,7 @@ const App: React.FC = () => {
   const { selectedObject } = useCanvasContext();
 
   return (
-    <div className="bg-gray-100">
+    <div className="bg-gray-100 h-full">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -24,9 +24,7 @@ const App: React.FC = () => {
 
             <LayersPanel />
 
-            {selectedObject && selectedObject.type === "textbox" && (
-              <PropertiesPanel />
-            )}
+            {selectedObject ? <PropertiesPanel /> : null}
           </div>
         </div>
       </div>
