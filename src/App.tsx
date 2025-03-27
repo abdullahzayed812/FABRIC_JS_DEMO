@@ -5,6 +5,7 @@ import { CanvasContainer } from "./components/CanvasContainer";
 import { Header } from "./components/Header";
 import { LayersPanel } from "./components/LayersPanel";
 import { useCanvasContext } from "./context/canvasContext";
+import { CanvasCard } from "./components/CanvasCard";
 
 const App: React.FC = () => {
   const { selectedObject } = useCanvasContext();
@@ -28,6 +29,8 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CanvasCard templateName="Template 1" />
     </div>
   );
 };

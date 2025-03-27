@@ -1,7 +1,5 @@
 import {
   Canvas,
-  Rect,
-  Circle,
   FabricObject,
   Textbox,
   loadSVGFromString,
@@ -12,6 +10,7 @@ import {
   FabricImage,
 } from "fabric";
 import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useEffect, useRef, useState } from "react";
+import { CanvasSerializer } from "../components/CanvasSerializer";
 
 interface CanvasContextType {
   canvas: Canvas | null;
@@ -24,9 +23,6 @@ interface CanvasContextType {
   canvasHeight: number;
   setCanvasWidth: Dispatch<SetStateAction<number>>;
   setCanvasHeight: Dispatch<SetStateAction<number>>;
-  addText: () => void;
-  addRectangle: () => void;
-  addCircle: () => void;
   addSvgBackground: (svgString: string) => void;
   addImage: (image: string) => void;
   updateObjectProperties: (properties: Partial<Textbox>) => void;
@@ -54,9 +50,6 @@ export const CanvasContext = createContext<CanvasContextType>({
   canvasHeight: 800,
   setCanvasWidth: () => {},
   setCanvasHeight: () => {},
-  addText: () => {},
-  addRectangle: () => {},
-  addCircle: () => {},
   addSvgBackground: () => {},
   addImage: () => {},
   updateObjectProperties: () => {},
@@ -228,56 +221,6 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setLayers([...objects].reverse() as CustomFabricObject[]);
   };
 
-  const addText = (): void => {
-    if (!canvas) return;
-
-    const text = new Textbox("Edit This Text", {
-      left: 100,
-      top: 100,
-      width: 200,
-      fontFamily: "Arial",
-      fontSize: 30,
-      fill: "#000000",
-      padding: 10,
-      borderColor: "#000000",
-    });
-
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    canvas.requestRenderAll();
-  };
-
-  const addRectangle = (): void => {
-    if (!canvas) return;
-
-    const rect = new Rect({
-      left: 100,
-      top: 100,
-      width: 100,
-      height: 100,
-      fill: "#f00",
-    });
-
-    canvas.add(rect);
-    canvas.setActiveObject(rect);
-    canvas.requestRenderAll();
-  };
-
-  const addCircle = (): void => {
-    if (!canvas) return;
-
-    const circle = new Circle({
-      left: 100,
-      top: 100,
-      radius: 50,
-      fill: "#00f",
-    });
-
-    canvas.add(circle);
-    canvas.setActiveObject(circle);
-    canvas.requestRenderAll();
-  };
-
   const addSvgBackground = async (svgString: string): Promise<void> => {
     if (!canvas) return;
 
@@ -344,14 +287,8 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const exportCanvas = (): void => {
     if (!canvas) return;
 
-    const dataURL = canvas.toJSON().objects;
-
-    console.log(dataURL);
-
-    // const link = document.createElement("a");
-    // link.download = "canvas-design.png";
-    // link.href = dataURL;
-    // link.click();
+    const canvasSerializer = new CanvasSerializer(canvas);
+    canvasSerializer.saveToLocalStorage();
   };
 
   return (
@@ -367,9 +304,6 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setCanvasWidth,
         canvasHeight,
         setCanvasHeight,
-        addText,
-        addRectangle,
-        addCircle,
         addSvgBackground,
         addImage,
         updateObjectProperties,
