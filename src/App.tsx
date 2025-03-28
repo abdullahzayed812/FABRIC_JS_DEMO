@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PropertiesPanel } from "./components/PropertiesPanel";
 import { ToolsPanel } from "./components/ToolsPanel";
 import { CanvasContainer } from "./components/CanvasContainer";
@@ -9,6 +9,15 @@ import { CanvasCard } from "./components/CanvasCard";
 
 const App: React.FC = () => {
   const { selectedObject } = useCanvasContext();
+  const [showSavedTemplate, setShowSavedTemplate] = useState(false);
+
+  useEffect(() => {
+    (() => {
+      const canvasExists = localStorage.getItem("canvasTemplate");
+
+      setShowSavedTemplate(canvasExists ? true : false);
+    })();
+  }, []);
 
   return (
     <div className="bg-gray-100 h-full">
@@ -30,7 +39,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <CanvasCard templateName="Template 1" />
+      {showSavedTemplate ? <CanvasCard templateName="Template 1" /> : null}
     </div>
   );
 };
