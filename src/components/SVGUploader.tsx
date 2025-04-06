@@ -21,10 +21,7 @@ export const SVGUploader = () => {
     const reader = new FileReader();
     reader.onload = (event: ProgressEvent<FileReader>) => {
       if (event.target?.result && typeof event.target.result === "string") {
-        const base64Data = event.target.result.replace(
-          "data:image/svg+xml;base64,",
-          ""
-        );
+        const base64Data = event.target.result.replace("data:image/svg+xml;base64,", "");
         const svgString = atob(base64Data);
 
         addSvgBackground(svgString);
@@ -39,15 +36,9 @@ export const SVGUploader = () => {
         onClick={() => fileInputRef.current?.click()}
         className="w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
       >
-        Upload SVG Background
+        Upload SVG Template
       </button>
-      <input
-        type="file"
-        accept=".svg"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="hidden"
-      />
+      <input type="file" accept=".svg" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
     </div>
   );
 };

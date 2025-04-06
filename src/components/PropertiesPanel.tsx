@@ -25,6 +25,8 @@ interface PropertiesType {
   backgroundColor: string;
   fill: string | TFiller;
   radius: number;
+  label?: string;
+  tag?: string;
 }
 
 export const PropertiesPanel = () => {
@@ -45,6 +47,8 @@ export const PropertiesPanel = () => {
     backgroundColor: "",
     fill: "",
     radius: 0,
+    label: "",
+    tag: "",
   });
 
   useEffect(() => {
@@ -60,17 +64,18 @@ export const PropertiesPanel = () => {
       backgroundColor: selectedObject?.backgroundColor || "",
       fill: selectedObject?.fill || "",
       radius: isCircle ? selectedObject.radius : 0,
+      label: isTextbox && "label" in selectedObject ? (selectedObject as any).label : "",
+      tag: isTextbox && "tag" in selectedObject ? (selectedObject as any).tag : "",
     });
   }, [selectedObject, isTextbox, isCircle]);
 
   const handlePropertiesChange = (prop: string, value: string) => {
-    setProperties((prev) => ({ ...prev, [prop]: +value }));
+    setProperties((prev) => ({ ...prev, [prop]: value }));
   };
 
   const updateText = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     handlePropertiesChange("content", e.target.value);
-    selectedObject?.set("text", e.target.value);
-    selectedObject?.canvas?.requestRenderAll();
+    updateObjectProperties({ text: e.target.value });
   };
 
   const handleInputChange = (propType: string, value: string) => {
@@ -83,10 +88,36 @@ export const PropertiesPanel = () => {
       <h2 className="font-bold text-lg border-b pb-2">Properties Panel</h2>
 
       {isTextbox ? (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Text Content</label>
-          <textarea value={properties.content} onChange={updateText} className="w-full border rounded px-2 py-1 h-20" />
-        </div>
+        <>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Text Content</label>
+            <textarea
+              value={properties.content}
+              onChange={updateText}
+              className="w-full border rounded px-2 py-1 h-20"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Label</label>
+            <input
+              type="text"
+              value={properties.label}
+              onChange={(e) => handleInputChange("label", e.target.value)}
+              className="w-full rounded p-2 border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Tag</label>
+            <input
+              type="text"
+              value={properties.tag}
+              onChange={(e) => handleInputChange("tag", e.target.value)}
+              className="w-full rounded p-2 border"
+            />
+          </div>
+        </>
       ) : null}
 
       <div className="space-y-2">

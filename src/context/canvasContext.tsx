@@ -33,9 +33,11 @@ interface CanvasContextType {
   moveSelectedLayer: (direction: "UP" | "DOWN") => void;
 }
 
-interface CustomFabricObject extends FabricObject {
+export interface CustomFabricObject extends FabricObject {
   id?: string;
   zIndex?: number;
+  label?: string;
+  tag?: string;
 }
 
 // Create context with default values
@@ -260,7 +262,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     canvas.requestRenderAll();
   };
 
-  const updateObjectProperties = (properties: Partial<Textbox>): void => {
+  const updateObjectProperties = (properties: Partial<CustomFabricObject>): void => {
     if (!canvas || !selectedObject) return;
 
     Object.entries(properties).forEach(([prop, value]) => {

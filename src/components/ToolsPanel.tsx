@@ -14,7 +14,8 @@ export const ToolsPanel = () => {
       <h2 className="font-bold text-lg border-b pb-2">Tools</h2>
 
       <SVGUploader />
-      <ImageUploader />
+      <ImageUploader title="Developer Logo" />
+      <ImageUploader title="Project Logo" />
 
       <div className="flex items-center gap-4">
         <button

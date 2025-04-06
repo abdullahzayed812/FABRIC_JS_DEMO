@@ -1,7 +1,11 @@
 import { useRef } from "react";
 import { useCanvasContext } from "../context/canvasContext";
 
-export const ImageUploader = () => {
+interface ImageUPloaderProps {
+  title: string;
+}
+
+export const ImageUploader: React.FC<ImageUPloaderProps> = ({ title }) => {
   const { addImage } = useCanvasContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,15 +31,9 @@ export const ImageUploader = () => {
         onClick={() => fileInputRef.current?.click()}
         className="w-full bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
       >
-        Upload Image
+        Upload {title}
       </button>
-      <input
-        type="file"
-        accept="*"
-        ref={fileInputRef}
-        onChange={handleImageUpload}
-        className="hidden"
-      />
+      <input type="file" accept="*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
     </div>
   );
 };
