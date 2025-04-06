@@ -30,7 +30,7 @@ interface CanvasContextType {
   exportCanvas: () => void;
   addIdToObject: (object: any) => void;
   selectLayerInCanvas: (layerId: string) => void;
-  moveSelectedLayer: (direction: "UP" | "DOWN") => void;
+  moveSelectedLayer: (direction: "UP" | "DOWN" | "CLEAR") => void;
 }
 
 export interface CustomFabricObject extends FabricObject {
@@ -81,7 +81,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const initCanvas = new Canvas(canvasRef.current, {
       width: canvasWidth,
       height: canvasHeight,
-      backgroundColor: "#ffffff",
+      backgroundColor: "#FFFFFF",
     });
 
     initCanvas.on("selection:created", (e) => {
@@ -159,7 +159,7 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   };
 
-  const moveSelectedLayer = (direction: "UP" | "DOWN") => {
+  const moveSelectedLayer = (direction: "UP" | "DOWN" | "CLEAR") => {
     if (!selectedLayer || !canvas) return;
 
     const objects = canvas.getObjects();

@@ -1,5 +1,5 @@
 import { useCanvasContext } from "../context/canvasContext";
-import { EyeOff, MoveUp, MoveDown } from "lucide-react";
+import { MoveUp, MoveDown } from "lucide-react";
 
 export const LayersPanel = () => {
   const { layers, selectedLayer, selectLayerInCanvas, moveSelectedLayer } = useCanvasContext();
@@ -29,6 +29,12 @@ export const LayersPanel = () => {
           disabled={moveDownDisabled}
         >
           <MoveDown />
+        </button>
+        <button
+          className={`bg-gray-100 disabled:bg-gray-700 hover:bg-gray-200 py-2 px-4 rounded`}
+          onClick={() => moveSelectedLayer("CLEAR")}
+        >
+          Clear
         </button>
       </div>
       <ul className="flex flex-col space-y-2">

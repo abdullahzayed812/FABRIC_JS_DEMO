@@ -24,7 +24,7 @@ export class FabricShapeGenerator {
       fontSize: 30,
       fill: "#000000",
       padding: 10,
-      borderColor: "#000000",
+      borderColor: "#FFF",
     };
 
     const text = new Textbox("Edit This Text", { ...defaultOptions, options });
@@ -40,12 +40,12 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      fill: "red",
+      fill: "#F00",
       width: 100,
       height: 100,
       left: 50,
       top: 50,
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -62,11 +62,11 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      fill: "blue",
+      fill: "#00F",
       radius: 50,
       left: 50,
       top: 50,
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -86,12 +86,12 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      fill: "green",
+      fill: "#1DCD9F",
       width: 100,
       height: 100,
       left: 50,
       top: 50,
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -111,12 +111,12 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      fill: "purple",
+      fill: "#A62C2C",
       rx: 50,
       ry: 30,
       left: 50,
       top: 50,
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -136,10 +136,10 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      fill: "orange",
+      fill: "#FF9B17",
       left: 50,
       top: 50,
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -159,7 +159,7 @@ export class FabricShapeGenerator {
     if (!this.canvas) return;
 
     const defaultOptions = {
-      stroke: "black",
+      stroke: "#000000",
       strokeWidth: 2,
     };
 
@@ -183,8 +183,8 @@ export class FabricShapeGenerator {
       innerRadius = 30,
       left = 50,
       top = 50,
-      fill = "yellow",
-      stroke = "black",
+      fill = "#FEBA17",
+      stroke = "#000000",
       strokeWidth = 2,
     } = options;
 
@@ -207,7 +207,7 @@ export class FabricShapeGenerator {
   public createRegularPolygon(options: ShapeOptions & { sides?: number } = {}): Polygon | undefined {
     if (!this.canvas) return;
 
-    const { sides = 6, left = 50, top = 50, fill = "teal", stroke = "black", strokeWidth = 2 } = options;
+    const { sides = 6, left = 50, top = 50, fill = "teal", stroke = "#000000", strokeWidth = 2 } = options;
 
     const polygonPoints = this.generateRegularPolygonPoints(sides, 50);
     const polygon = new Polygon(polygonPoints, {

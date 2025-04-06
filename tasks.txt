@@ -1,4 +1,4 @@
 - Split svg shapes to add branding mask colors (primary, secondary, additional, fixed).
 - Also add branding mask to the any shape has fill color.
-- Add label, tag and border (color, style) to textbox.
+- Add label, tag and border (color, style) to textbox. ( DONE )
 - Add developer logo image uploader and project logo. ( DONE )
