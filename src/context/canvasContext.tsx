@@ -3,11 +3,11 @@ import {
   FabricObject,
   Textbox,
   loadSVGFromString,
-  util,
   FabricObjectProps,
   SerializedObjectProps,
   ObjectEvents,
   FabricImage,
+  Group,
 } from "fabric";
 import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useEffect, useRef, useState } from "react";
 import { CanvasSerializer } from "../components/CanvasSerializer";
@@ -40,6 +40,12 @@ export interface CustomFabricObject extends FabricObject {
   tag?: string;
 }
 
+interface SVGShape {
+  id: string;
+  element: FabricObject;
+  originalFill: string | undefined;
+}
+
 // Create context with default values
 export const CanvasContext = createContext<CanvasContextType>({
   canvas: null,
@@ -69,6 +75,8 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [canvasHeight, setCanvasHeight] = useState<number>(800);
   const [layers, setLayers] = useState<CustomFabricObject[]>([]);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
+  const [extractedShapes, setExtractedShapes] = useState<SVGShape[]>([]);
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -233,17 +241,35 @@ export const CanvasProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       (obj): obj is FabricObject<Partial<FabricObjectProps>, SerializedObjectProps, ObjectEvents> => obj !== null
     );
 
-    const svgObject = util.groupSVGElements(filteredObjects, options);
+    const group = new Group(filteredObjects, options);
 
-    svgObject.set({
+    group.set({
       left: 100,
       top: 100,
       scaleX: 0.5,
       scaleY: 0.5,
     });
 
-    canvas.add(svgObject);
+    canvas.add(group);
     canvas.requestRenderAll();
+
+    extractShapesFromSVG(filteredObjects);
+  };
+
+  const extractShapesFromSVG = (objects: FabricObject[]) => {
+    const shapes: SVGShape[] = objects.map((obj, index) => {
+      const id = `shape_${index}_${Date.now()}`;
+
+      const originalFill = obj.fill?.toString();
+
+      return {
+        id,
+        element: obj,
+        originalFill,
+      };
+    });
+
+    setExtractedShapes(shapes);
   };
 
   const addImage = async (image: string) => {
