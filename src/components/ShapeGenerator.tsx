@@ -1,4 +1,4 @@
-import { Canvas, Circle, Ellipse, FabricObject, Line, Polygon, Rect, Textbox, Triangle } from "fabric";
+import { Canvas, Circle, Ellipse, FabricObject, Gradient, Line, Path, Polygon, Rect, Textbox, Triangle } from "fabric";
 
 interface ShapeOptions {
   fill?: string;
@@ -223,6 +223,110 @@ export class FabricShapeGenerator {
     this.canvas.requestRenderAll();
 
     return polygon;
+  }
+
+  public createEditableCurve(): void {
+    if (!this.canvas) return;
+
+    const p0 = { x: 100, y: 300 };
+    const cp = { x: 200, y: 100 };
+    const p1 = { x: 300, y: 300 };
+
+    const createPath = () => {
+      const d = `M ${p0.x} ${p0.y} Q ${cp.x} ${cp.y} ${p1.x} ${p1.y}`;
+      return new Path(d, {
+        stroke: "#000",
+        strokeWidth: 2,
+        fill: "",
+        selectable: false,
+        evented: false,
+      });
+    };
+
+    let path = createPath();
+    this.canvas.add(path);
+
+    const makeControl = (pt: typeof p0) => {
+      const circle = new Circle({
+        radius: 5,
+        fill: "red",
+        left: pt.x,
+        top: pt.y,
+        originX: "center",
+        originY: "center",
+        hasBorders: false,
+        hasControls: false,
+      });
+
+      circle.on("moving", () => {
+        pt.x = circle.left!;
+        pt.y = circle.top!;
+        this.canvas?.remove(path);
+        path = createPath();
+        this.canvas?.add(path);
+        // this.canvas?.sendToBack(path);
+      });
+
+      this.canvas?.add(circle);
+      return circle;
+    };
+
+    makeControl(p0);
+    makeControl(cp);
+    makeControl(p1);
+  }
+
+  public createEditablePolygon(points: { x: number; y: number }[], options: ShapeOptions = {}): Polygon | undefined {
+    if (!this.canvas) return;
+
+    const polygon = new Polygon(points, {
+      fill: "#FF9B17",
+      stroke: "#000",
+      strokeWidth: 2,
+      objectCaching: false,
+      transparentCorners: false,
+      ...options,
+    });
+
+    polygon.evented = true;
+    polygon.hasBorders = false;
+
+    this.canvas.add(polygon);
+    this.canvas.setActiveObject(polygon);
+    this.canvas.requestRenderAll();
+
+    return polygon;
+  }
+
+  public createGradientRectangle(options: ShapeOptions = {}): Rect | undefined {
+    if (!this.canvas) return;
+
+    const rect = new Rect({
+      left: 100,
+      top: 100,
+      width: 200,
+      height: 100,
+      stroke: "#000",
+      strokeWidth: 2,
+      ...options,
+    });
+
+    const gradient = new Gradient({
+      type: "linear",
+      gradientUnits: "pixels",
+      coords: { x1: 0, y1: 0, x2: 200, y2: 0 },
+      colorStops: [
+        { offset: 0, color: "#ff0000" },
+        { offset: 1, color: "#0000ff" },
+      ],
+    });
+
+    rect.set("fill", gradient);
+    this.canvas.add(rect);
+    this.canvas.setActiveObject(rect);
+    this.canvas.requestRenderAll();
+
+    return rect;
   }
 
   public createAllShapes(): FabricObject[] {

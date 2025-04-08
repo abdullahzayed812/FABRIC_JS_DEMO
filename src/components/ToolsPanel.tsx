@@ -1,13 +1,10 @@
-import { RectangleHorizontal, Circle, TextCursor, ChartSpline } from "lucide-react";
 import { SVGUploader } from "./SVGUploader";
 import { useCanvasContext } from "../context/canvasContext";
 import { ImageUploader } from "./ImageUploader";
-import { FabricShapeGenerator } from "./ShapeGenerator";
+import { CreateShapes } from "./CreateShapes";
 
 export const ToolsPanel = () => {
-  const { canvas, canvasWidth, canvasHeight, setCanvasWidth, setCanvasHeight } = useCanvasContext();
-
-  const fabricShapeGenerator = new FabricShapeGenerator(canvas);
+  const { canvasWidth, canvasHeight, setCanvasWidth, setCanvasHeight } = useCanvasContext();
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
@@ -17,32 +14,7 @@ export const ToolsPanel = () => {
       <ImageUploader title="Developer Logo" />
       <ImageUploader title="Project Logo" />
 
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => fabricShapeGenerator.createText()}
-          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
-        >
-          <TextCursor />
-        </button>
-        <button
-          onClick={() => fabricShapeGenerator.createRectangle()}
-          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
-        >
-          <RectangleHorizontal />
-        </button>
-        <button
-          onClick={() => fabricShapeGenerator.createCircle()}
-          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
-        >
-          <Circle />
-        </button>
-        <button
-          onClick={() => fabricShapeGenerator.createLine([200, 200, 350, 250])}
-          className=" bg-gray-100 hover:bg-gray-200 py-2 px-4 rounded"
-        >
-          <ChartSpline />
-        </button>
-      </div>
+      <CreateShapes />
 
       <div className="space-y-2">
         <label className="block text-sm font-medium">Canvas Size</label>
